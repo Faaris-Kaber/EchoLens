@@ -1,9 +1,14 @@
 import React from "react";
 import { Check, X } from "lucide-react";
 
+const colorClasses = {
+  green: "text-green-300",
+  red: "text-red-300",
+};
+
 const ArgumentSection = ({ title, color, icon, points }) => (
-    <div className={`flex-1 rounded-xl border border-borderLight bg-panel p-4`}>
-    <h4 className={`flex items-center gap-2 text-${color}-300 font-semibold mb-3`}>
+  <div className="flex-1 rounded-xl border border-borderLight bg-panel p-4">
+    <h4 className={`flex items-center gap-2 ${colorClasses[color]} font-semibold mb-3`}>
       {icon}
       {title}
     </h4>
@@ -16,23 +21,23 @@ const ArgumentSection = ({ title, color, icon, points }) => (
 );
 
 const DebateResults = ({ claim, forPoints = [], againstPoints = [] }) => {
-  const hasFor = Array.isArray(forPoints) && forPoints.length;
-  const hasAgainst = Array.isArray(againstPoints) && againstPoints.length;
+  const hasFor = Array.isArray(forPoints) && forPoints.length > 0;
+  const hasAgainst = Array.isArray(againstPoints) && againstPoints.length > 0;
 
   return (
     <section className="w-full bg-panel p-6 rounded-2xl shadow-md border border-borderLight mt-0">
       <header className="mb-4">
-        <div className="uppercase text-sm text-textMuted">Debate Topic</div>
+        <div className="uppercase text-sm text-textMuted">debate topic</div>
         <h3 className="text-accent text-lg font-semibold italic max-w-[70ch]">
-          {claim}
+          {claim || "no claim detected"}
         </h3>
       </header>
 
-      {(hasFor || hasAgainst) ? (
+      {hasFor || hasAgainst ? (
         <div className="flex flex-col md:flex-row gap-6">
           {hasFor && (
             <ArgumentSection
-              title="For"
+              title="for"
               color="green"
               icon={<Check size={18} />}
               points={forPoints}
@@ -40,7 +45,7 @@ const DebateResults = ({ claim, forPoints = [], againstPoints = [] }) => {
           )}
           {hasAgainst && (
             <ArgumentSection
-              title="Against"
+              title="against"
               color="red"
               icon={<X size={18} />}
               points={againstPoints}
@@ -49,7 +54,7 @@ const DebateResults = ({ claim, forPoints = [], againstPoints = [] }) => {
         </div>
       ) : (
         <p className="text-textMuted text-sm italic">
-          No arguments were found.
+          no arguments were found
         </p>
       )}
     </section>

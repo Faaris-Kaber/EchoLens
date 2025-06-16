@@ -6,21 +6,29 @@ import EmotionBadge from "../components/EmotionBadge";
 import DebateResults from "../components/DebateResults";
 import { extractDomain, fetchJSON } from "../utils/helpers";
 
-const MainContent = () => {
-  const [text, setText] = useState("");
+const MainContent = ({
+  text,
+  setText,
+  analysisResult,
+  setAnalysisResult,
+  debateResult,
+  setDebateResult,
+  mode,
+  setMode,
+  updateCurrentSession,
+}) => {
   const [sourceUrl, setSourceUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [debateResult, setDebateResult] = useState(null);
   const [error, setError] = useState("");
   const [sourceBias, setSourceBias] = useState(null);
-  const [mode, setMode] = useState("analyze");
 
+  // if user provides a source url during analyze mode, try to map its domain to known bias
   useEffect(() => {
     if (mode !== "analyze" || !sourceUrl) {
       setSourceBias(null);
       return;
     }
+
     const domain = extractDomain(sourceUrl);
     fetch("/data/domain_to_bias.json")
       .then((res) => res.json())
@@ -34,35 +42,54 @@ const MainContent = () => {
       .catch(() => setSourceBias(null));
   }, [sourceUrl, mode]);
 
+  // handle bias and emotion analysis
   const handleAnalyze = async () => {
     setLoading(true);
     setError("");
     setAnalysisResult(null);
 
     const data = await fetchJSON("http://localhost:8000/analyze", { text });
-    if (data.error) setError(data.error);
-    else setAnalysisResult(data);
+
+    if (data.error) {
+      setError(data.error);
+    } else {
+      setAnalysisResult(data);
+      updateCurrentSession({
+        text,
+        analyzeResult: data,
+        mode: "analyze",
+      });
+    }
 
     setLoading(false);
   };
 
+  // handle argument breakdown generation
   const handleDebate = async () => {
     setLoading(true);
     setError("");
     setDebateResult(null);
 
     const data = await fetchJSON("http://localhost:8000/debate", { text });
-    if (data.error) setError(data.error);
-    else setDebateResult(data);
+
+    if (data.error) {
+      setError(data.error);
+    } else {
+      setDebateResult(data);
+      updateCurrentSession({
+        text,
+        debateResult: data,
+        mode: "debate",
+      });
+    }
 
     setLoading(false);
   };
-console.log("FULL ANALYSIS RESULT:", analysisResult);
 
   return (
     <main className="flex-1 p-6 bg-appBg text-white overflow-auto">
       <div className="flex flex-col lg:flex-row items-start gap-6 max-w-7xl mx-auto">
-        {/* Left Input Panel */}
+        {/* left input section */}
         <section className="lg:w-3/5 w-full bg-panel p-6 rounded-2xl shadow-md border border-borderLight">
           <h2 className="text-2xl font-bold mb-4">Input</h2>
 
@@ -96,6 +123,7 @@ console.log("FULL ANALYSIS RESULT:", analysisResult);
             </button>
           </div>
 
+          {/* only show source url input in analyze mode */}
           {mode === "analyze" && (
             <div className="mt-4">
               <label className="block text-sm font-medium text-textMuted mb-1">
@@ -116,31 +144,22 @@ console.log("FULL ANALYSIS RESULT:", analysisResult);
             disabled={loading}
             className="mt-4 w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white py-2 rounded-xl font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
-            {loading
-              ? "Processing..."
-              : mode === "analyze"
-              ? "Analyze"
-              : "Explore Both Sides"}
+            {loading && "Processing..."}
+            {!loading && mode === "analyze" && "Analyze"}
+            {!loading && mode === "debate" && "Explore Both Sides"}
           </button>
 
           {error && <p className="mt-4 text-red-500 text-sm">{error}</p>}
         </section>
 
-        {/* Right Output Panel */}
+        {/* right results section */}
         <div className="flex-1 flex flex-col gap-6 self-start">
-          {analysisResult && mode === "analyze" && (
+          {mode === "analyze" && analysisResult && (
             <>
               {analysisResult.bias?.label && (
                 <div className="bg-panel p-6 rounded-2xl border-l-4 border-yellow-400 shadow-md">
                   <div className="text-sm text-textMuted uppercase mb-2">Bias Breakdown</div>
-                  <BiasCompass
-                    label={
-                      typeof analysisResult.bias.label === "string"
-                        ? analysisResult.bias.label.charAt(0).toUpperCase() +
-                          analysisResult.bias.label.slice(1).toLowerCase()
-                        : ""
-                    }
-                  />
+                  <BiasCompass label={analysisResult.bias.label} />
                 </div>
               )}
 
@@ -159,17 +178,14 @@ console.log("FULL ANALYSIS RESULT:", analysisResult);
                   <div className="text-sm text-textMuted uppercase mb-2">Source Bias</div>
                   <p>
                     <strong>{sourceBias.domain}</strong> is rated as{" "}
-                    <span className="text-accent font-semibold">
-                      {sourceBias.label}
-                    </span>{" "}
-                    by AllSides.
+                    <span className="text-accent font-semibold">{sourceBias.label}</span> by AllSides.
                   </p>
                 </div>
               )}
             </>
           )}
 
-          {debateResult && mode === "debate" && (
+          {mode === "debate" && debateResult && (
             <DebateResults
               claim={debateResult.claim}
               forPoints={debateResult.for}
