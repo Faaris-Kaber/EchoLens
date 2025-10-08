@@ -53,7 +53,8 @@ You need Docker and an OpenAI API key
     https://github.com/Faaris-Kaber/EchoLens.git
    
     cd echolens
-3. Create a `.env` file in the backend folder
+3. Create a `.env` file in the backend folder:
+
     OPENAI_API_KEY=your_key_here
    
     DATABASE_URL=postgresql://postgres:postgres@postgres:5432/echolens
