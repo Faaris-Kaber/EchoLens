@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EchoLens
 
-## Getting Started
+EchoLens is an AI tool that helps you cut through political bias in the media. It analyzes any article to reveal emotional tone, detect bias, and assess source credibility. Its Debate Mode generates balanced arguments from both sides of an issue, helping you see the bigger picture instead of just one perspective.
 
-First, run the development server:
+# What it does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+EchoLens helps you understand bias in news coverage by analyzing articles and showing both sides of controversial topics. It uses AI models trained on thousands of news articles to detect political slant and emotional tone.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Main features:
+- Detects political bias (Left / Center / Right)
+- Identifies emotional language in media
+- Automatically extracts article text from URLs
+- Rates source bias using AllSides data
+- Generates debate arguments for both sides using GPT-4
+- Saves analysis sessions for easy comparison
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Tech stack
 
-## Learn More
+Frontend:
+- Next.js 15.5
+- React 19
+- TypeScript
+- Tailwind CSS
 
-To learn more about Next.js, take a look at the following resources:
+Backend:
+- Python 3.10
+- FastAPI
+- PyTorch
+- HuggingFace Transformers
+- OpenAI API (GPT-4)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+AI Models:
+- BERT (political bias detection)
+- DistilRoBERTa (emotion analysis)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Database:
+- PostgreSQL
+- SQLAlchemy ORM
 
-## Deploy on Vercel
+DevOps:
+- Docker & Docker Compose
+- Uvicorn ASGI server
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Everything runs in Docker for easy deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# How to run it
+
+You need Docker and an OpenAI API key
+
+1. Clone the repo
+    https://github.com/Faaris-Kaber/EchoLens.git
+    cd echolens
+2. Create a `.env` file in the backend folder
+    OPENAI_API_KEY=your_key_here
+    DATABASE_URL=postgresql://postgres:postgres@postgres:5432/echolens
+3. Start everything with Docker
+    docker-compose up --build
+
+4. Open http://localhost:3000
+
+The app will download the AI models on first startup
+
+
+# How it works
+
+The bias detection works like this:
+
+1. Scrapes article text from the URL using newspaper3k
+2. Extracts the domain and checks it against AllSides source ratings
+3. Splits long articles into sentence-based chunks (approx. 450 tokens each, never mid-sentence)
+4. Runs each chunk through a BERT model trained on labeled news articles
+5. Combines the predictions using confidence-weighted logit averaging
+6. For the "explore both sides" it sends your text to GPT-4 with a prompt asking it to extract the main claim and generate arguments for both sides. This helps you understand different perspectives on controversial topics.
+
+
+# Project structure:
+
+- app/ — Next.js frontend  
+- backend/ — FastAPI backend  
+- public/ — static assets  
+- docker-compose.yml & Dockerfile — deployment setup  
+- requirements.txt — backend dependencies  
+- package.json — frontend dependencies
+
+# Why I built this:
+As someone who keeps up with politics I could not help but see how political polarization is driving us apart. A large reason for this polarization is because of the echo chambers we are unknowingly putting ourselves into. Social enviroments where we do not get to hear charitable interpertations of the "other side" and what results is a divisoin. Echolens was made to help you see through these echo chanmbers by telling you which way this text leans, the credibiltiy of the source and the emotion they evoke. This in combination with the "explore both sides" aims to remind you of how the media you are consuming tends to be leaning and counterpoints you might not have heard before. 
+
+# About me
+I am Faaris Kaber, a computer engineering student at the University of Guelph who’s passionate about AI and technology, and interested in how technology is influencing the discourse of humans
+
+# License
+MIT

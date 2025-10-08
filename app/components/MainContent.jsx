@@ -9,6 +9,8 @@ import { extractDomain, fetchJSON } from "../utils/helpers";
 const MainContent = ({
   text,
   setText,
+  sourceUrl,
+  setSourceUrl,
   analysisResult,
   setAnalysisResult,
   debateResult,
@@ -17,10 +19,10 @@ const MainContent = ({
   setMode,
   updateCurrentSession,
 }) => {
-  const [sourceUrl, setSourceUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sourceBias, setSourceBias] = useState(null);
+  const [isScraping, setIsScraping] = useState(false);
 
   // if user provides a source url during analyze mode, try to map its domain to known bias
   useEffect(() => {
@@ -42,6 +44,41 @@ const MainContent = ({
       .catch(() => setSourceBias(null));
   }, [sourceUrl, mode]);
 
+  // handle fetching article from URL
+  const handleFetchArticle = async () => {
+    if (!sourceUrl) return;
+    
+    setIsScraping(true);
+    setError("");
+    
+    try {
+      const response = await fetch("http://localhost:8000/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: sourceUrl }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setText(data.text);
+      } else {
+        setError(data.detail || "Failed to scrape article");
+      }
+    } catch (err) {
+      setError("Error fetching article. Please check the URL and try again.");
+      console.error("Scraping error:", err);
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
+  // Handle sourceUrl change and save to session
+  const handleSourceUrlChange = (newUrl) => {
+    setSourceUrl(newUrl);
+    updateCurrentSession({ sourceUrl: newUrl });
+  };
+
   // handle bias and emotion analysis
   const handleAnalyze = async () => {
     setLoading(true);
@@ -56,6 +93,7 @@ const MainContent = ({
       setAnalysisResult(data);
       updateCurrentSession({
         text,
+        sourceUrl,
         analyzeResult: data,
         mode: "analyze",
       });
@@ -78,6 +116,7 @@ const MainContent = ({
       setDebateResult(data);
       updateCurrentSession({
         text,
+        sourceUrl,
         debateResult: data,
         mode: "debate",
       });
@@ -129,20 +168,29 @@ const MainContent = ({
               <label className="block text-sm font-medium text-textMuted mb-1">
                 Source URL (optional)
               </label>
-              <input
-                type="url"
-                value={sourceUrl}
-                onChange={(e) => setSourceUrl(e.target.value)}
-                placeholder="https://example.com/news/article"
-                className="w-full p-2 rounded-xl border border-borderLight bg-panel text-white placeholder-textMuted focus:outline-none focus:ring-2 focus:ring-accent"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={sourceUrl}
+                  onChange={(e) => handleSourceUrlChange(e.target.value)}
+                  placeholder="https://example.com/news/article"
+                  className="flex-1 p-2 rounded-xl border border-borderLight bg-panel text-white placeholder-textMuted focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+                <button
+                  onClick={handleFetchArticle}
+                  disabled={!sourceUrl || isScraping}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold text-sm shadow-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {isScraping ? "Fetching..." : "Fetch"}
+                </button>
+              </div>
             </div>
           )}
 
           <button
             onClick={mode === "analyze" ? handleAnalyze : handleDebate}
             disabled={loading}
-            className="mt-4 w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white py-2 rounded-xl font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="mt-4 w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white py-2 rounded-xl font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading && "Processing..."}
             {!loading && mode === "analyze" && "Analyze"}

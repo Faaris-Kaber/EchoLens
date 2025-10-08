@@ -37,7 +37,7 @@ const SideNavbar = ({
         onClick={onNewChat}
         className="w-full bg-borderLight text-white py-2 rounded-lg mb-4 hover:bg-accent transition"
       >
-        + new chat
+        + New chat
       </button>
 
       <h2 className="text-sm font-semibold text-textMuted mb-2">sessions</h2>

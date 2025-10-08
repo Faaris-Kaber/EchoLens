@@ -6,7 +6,7 @@ import SideNavbar from "./components/SideNavbar";
 import Header from "./components/Header";
 import MainContent from "./components/MainContent";
 
-// structure for analyze result
+// analyze result structure
 type AnalyzeResult = {
   bias: {
     label: string;
@@ -20,17 +20,18 @@ type AnalyzeResult = {
   };
 };
 
-// structure for debate result
+// debate result structure
 type DebateResult = {
   claim: string;
   for: string[];
   against: string[];
 };
 
-// structure for each chat session
+// chat session structure
 type Session = {
   label: string;
   text: string;
+  sourceUrl: string;
   analyzeResult?: AnalyzeResult | null;
   debateResult?: DebateResult | null;
   mode: "analyze" | "debate";
@@ -39,16 +40,17 @@ type Session = {
 export default function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // toggle sidebar visibility
+  // toggle sidebar open close
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  // initialize with one session
+  // start with one empty session
   const [sessions, setSessions] = useState<Session[]>([
     {
       label: "Session 1",
       text: "",
+      sourceUrl: "",
       analyzeResult: null,
       debateResult: null,
       mode: "analyze",
@@ -56,13 +58,14 @@ export default function HomePage() {
   ]);
   const [activeSessionIndex, setActiveSessionIndex] = useState(0);
 
-  // state for main panel
+  // main panel state
   const [text, setText] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [analysisResult, setAnalysisResult] = useState<AnalyzeResult | null>(null);
   const [debateResult, setDebateResult] = useState<DebateResult | null>(null);
   const [mode, setMode] = useState<"analyze" | "debate">("analyze");
 
-  // update only the current session's values without mutating others
+  // update current session without touching others
   const updateCurrentSession = (updatedFields: Partial<Session>) => {
     setSessions((prev) => {
       const updated = [...prev];
@@ -74,12 +77,13 @@ export default function HomePage() {
     });
   };
 
-  // creates a new chat session with numbered label
+  // create new empty session
   const handleNewChat = () => {
     const newSessionNumber = sessions.length + 1;
     const newSession: Session = {
       label: `Session ${newSessionNumber}`,
       text: "",
+      sourceUrl: "",
       analyzeResult: null,
       debateResult: null,
       mode: "analyze",
@@ -87,14 +91,16 @@ export default function HomePage() {
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionIndex(0);
     setText("");
+    setSourceUrl("");
     setAnalysisResult(null);
     setDebateResult(null);
     setMode("analyze");
   };
 
-  // loads session values into UI when user clicks one
+  // load session data when user clicks it
   const handleSessionClick = (session: Session, index: number) => {
     setText(session.text);
+    setSourceUrl(session.sourceUrl || "");
     setMode(session.mode);
     setAnalysisResult(session.analyzeResult || null);
     setDebateResult(session.debateResult || null);
@@ -133,6 +139,8 @@ export default function HomePage() {
         <MainContent
           text={text}
           setText={setText}
+          sourceUrl={sourceUrl}
+          setSourceUrl={setSourceUrl}
           analysisResult={analysisResult}
           setAnalysisResult={setAnalysisResult}
           debateResult={debateResult}

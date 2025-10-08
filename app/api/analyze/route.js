@@ -8,7 +8,7 @@ export async function POST(req) {
     );
   }
 
-  // Simulated AI-style output
+  // Simulated ai style output
   const result = {
     bias: "Moderate left-leaning bias with emotionally charged phrases.",
     techniques: "Loaded Language, Appeal to Authority, Strawman",
