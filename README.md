@@ -55,11 +55,13 @@ You need Docker and an OpenAI API key
     cd echolens
 3. Create a `.env` file in the backend folder
     OPENAI_API_KEY=your_key_here
+   
     DATABASE_URL=postgresql://postgres:postgres@postgres:5432/echolens
-4. Start everything with Docker
+   
+5. Start everything with Docker
     docker-compose up --build
 
-5. Open http://localhost:3000
+6. Open http://localhost:3000
 
 The app will download the AI models on first startup
 
