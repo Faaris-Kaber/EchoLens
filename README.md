@@ -102,6 +102,3 @@ As someone who keeps up with politics I could not help but see how political pol
 
 # About me
 I am Faaris Kaber, a computer engineering student at the University of Guelph who’s passionate about AI and technology, and interested in how technology is influencing the discourse of humans
-
-# License
-MIT
