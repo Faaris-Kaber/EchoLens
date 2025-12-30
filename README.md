@@ -140,7 +140,7 @@ Sends your text to GPT-4 with a prompt to extract the main claim and generate ba
 
 ## Why I Built This
 
-As someone who keeps up with politics, I couldn't help but see how political polarization is driving us apart. A large reason for this polarization is the echo chambers we unknowingly put ourselves into—social environments where we don't get to hear charitable interpretations of the "other side."
+As someone who keeps up with politics, I couldn't help but see how political polarization is driving us apart. A large reason for this polarization is the echo chambers we unknowingly put ourselves into social environments where we don't get to hear charitable interpretations of the "other side."
 
 EchoLens was made to help you see through these echo chambers by showing you which way a text leans, the credibility of the source, and the emotions it evokes. Combined with "Explore Both Sides," it reminds you how the media you consume tends to lean and presents counterpoints you might not have heard before.
 
