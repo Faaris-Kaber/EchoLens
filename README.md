@@ -14,6 +14,16 @@ EchoLens helps you understand bias in news coverage by analyzing articles and sh
 - Generates debate arguments for both sides using GPT-4
 - Saves analysis sessions for easy comparison
 
+## Screenshots
+
+<img width="1913" height="913" alt="ELSS" src="https://github.com/user-attachments/assets/d0292570-287c-4038-a2ee-3096ab86c11e" />
+
+<img width="1917" height="914" alt="ELSS1" src="https://github.com/user-attachments/assets/e06156c2-f604-497b-950b-59ad982fcb64" />
+
+<img width="1908" height="907" alt="ELSS2" src="https://github.com/user-attachments/assets/d0fe9a63-6529-40ea-9b98-055456f9875b" />
+
+<img width="1917" height="917" alt="ELSS3" src="https://github.com/user-attachments/assets/833b50bf-2bcc-42ba-b1c0-acee79e92a12" />
+
 ## Tech Stack
 
 **Frontend:**
