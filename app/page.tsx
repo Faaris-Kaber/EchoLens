@@ -2,40 +2,10 @@
 
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import SideNavbar from "./components/SideNavbar";
-import Header from "./components/Header";
-import MainContent from "./components/MainContent";
-
-// analyze result structure
-type AnalyzeResult = {
-  bias: {
-    label: string;
-    confidence: number;
-    raw_scores: Record<string, number>;
-  };
-  emotion: {
-    label: string;
-    confidence: number;
-    raw_scores: Record<string, number>;
-  };
-};
-
-// debate result structure
-type DebateResult = {
-  claim: string;
-  for: string[];
-  against: string[];
-};
-
-// chat session structure
-type Session = {
-  label: string;
-  text: string;
-  sourceUrl: string;
-  analyzeResult?: AnalyzeResult | null;
-  debateResult?: DebateResult | null;
-  mode: "analyze" | "debate";
-};
+import SideNavbar from "@/components/SideNavbar";
+import Header from "@/components/Header";
+import MainContent from "@/components/MainContent";
+import type { AnalyzeResult, DebateResult, Session } from "@/lib/types";
 
 export default function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -120,8 +90,6 @@ export default function HomePage() {
 
       {isSidebarOpen && (
         <SideNavbar
-          isOpen={isSidebarOpen}
-          setIsOpen={setIsSidebarOpen}
           sessions={sessions}
           onNewChat={handleNewChat}
           onSelectSession={handleSessionClick}

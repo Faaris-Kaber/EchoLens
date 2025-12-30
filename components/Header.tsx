@@ -2,7 +2,11 @@
 
 import React from "react";
 
-const Header = ({ isSidebarOpen }) => {
+interface HeaderProps {
+  isSidebarOpen: boolean;
+}
+
+const Header = ({ isSidebarOpen }: HeaderProps) => {
   return (
     <header className="h-16 w-full bg-header border-b border-borderLight text-textMain flex items-center justify-between px-6">
       <h1 className={`text-lg font-bold ${!isSidebarOpen ? "ml-10" : ""}`}>
@@ -14,3 +18,4 @@ const Header = ({ isSidebarOpen }) => {
 };
 
 export default Header;
+

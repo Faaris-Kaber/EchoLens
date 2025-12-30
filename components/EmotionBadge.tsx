@@ -4,7 +4,7 @@ import React from "react";
 import clsx from "clsx";
 
 // map each emotion label to an emoji and background color
-const emotionStyles = {
+const emotionStyles: Record<string, { emoji: string; color: string }> = {
   anger:    { emoji: "😠", color: "bg-red-600" },
   disgust:  { emoji: "🤢", color: "bg-green-700" },
   fear:     { emoji: "😨", color: "bg-purple-600" },
@@ -14,7 +14,12 @@ const emotionStyles = {
   surprise: { emoji: "😲", color: "bg-indigo-500" },
 };
 
-const EmotionBadge = ({ label = "unknown", confidence = 0 }) => {
+interface EmotionBadgeProps {
+  label?: string;
+  confidence?: number;
+}
+
+const EmotionBadge = ({ label = "unknown", confidence = 0 }: EmotionBadgeProps) => {
   // normalize the label to lowercase just in case
   const safeLabel = label.toLowerCase();
 
@@ -37,3 +42,4 @@ const EmotionBadge = ({ label = "unknown", confidence = 0 }) => {
 };
 
 export default EmotionBadge;
+

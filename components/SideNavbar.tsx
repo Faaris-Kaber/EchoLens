@@ -3,27 +3,34 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import { Pencil } from "lucide-react";
+import type { Session } from "@/lib/types";
+
+interface SideNavbarProps {
+  sessions: Session[];
+  onNewChat: () => void;
+  onSelectSession: (session: Session, index: number) => void;
+  activeSessionIndex: number;
+  setSessions: React.Dispatch<React.SetStateAction<Session[]>>;
+}
 
 const SideNavbar = ({
-  isOpen,
-  setIsOpen,
   sessions,
   onNewChat,
   onSelectSession,
   activeSessionIndex,
   setSessions,
-}) => {
-  const [editingIndex, setEditingIndex] = useState(null);
+}: SideNavbarProps) => {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [tempLabel, setTempLabel] = useState("");
 
   // start renaming a session
-  const startEditing = (index) => {
+  const startEditing = (index: number) => {
     setEditingIndex(index);
     setTempLabel(sessions[index].label);
   };
 
   // save the updated label or fallback if left empty
-  const finishEditing = (index) => {
+  const finishEditing = (index: number) => {
     const updated = [...sessions];
     const cleanLabel = tempLabel.trim();
     updated[index].label = cleanLabel || `Session ${index + 1}`;
@@ -89,3 +96,4 @@ const SideNavbar = ({
 };
 
 export default SideNavbar;
+

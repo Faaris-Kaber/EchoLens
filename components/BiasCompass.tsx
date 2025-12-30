@@ -2,7 +2,11 @@
 import React from "react";
 import clsx from "clsx";
 
-const BiasCompass = ({ label }) => {
+interface BiasCompassProps {
+  label: string;
+}
+
+const BiasCompass = ({ label }: BiasCompassProps) => {
   const categories = ["Left", "Center", "Right"];
 
   return (
@@ -36,3 +40,4 @@ const BiasCompass = ({ label }) => {
 };
 
 export default BiasCompass;
+

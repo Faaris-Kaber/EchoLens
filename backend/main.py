@@ -14,12 +14,13 @@ import json
 from dotenv import load_dotenv
 import numpy as np
 
-from backend.db import engine, get_db, check_db_connection
+from backend.db import engine, get_db
 from backend.models import Base, History
 
 from newspaper import Article
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -73,6 +74,31 @@ class TextRequest(BaseModel):
             raise ValueError('text cannot be empty')
         if len(v) > 10000:
             raise ValueError('text too long (max 10000 characters)')
+        return v
+
+
+class ScrapeRequest(BaseModel):
+    url: str
+    
+    @field_validator('url')
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError('URL cannot be empty')
+        
+        # parse and validate URL
+        parsed = urlparse(v)
+        if parsed.scheme not in ('http', 'https'):
+            raise ValueError('URL must use http or https')
+        if not parsed.netloc:
+            raise ValueError('Invalid URL format')
+        
+        # block internal/private IPs (basic SSRF protection)
+        blocked = ('localhost', '127.0.0.1', '0.0.0.0', '10.', '192.168.', '172.16.')
+        if any(parsed.netloc.startswith(b) for b in blocked):
+            raise ValueError('Internal URLs not allowed')
+        
         return v
 
 # load models on startup cleanup on shutdown
@@ -365,32 +391,33 @@ def health_check():
     }
 
 # scrape article from url
-@app.post("/scrape")
-async def scrape_url(data: dict):
-    url = data.get("url")
-    if not url:
-        raise HTTPException(status_code=400, detail="URL required")
+@app.post("/scrape", tags=["scraping"])
+async def scrape_url(req: ScrapeRequest):
+    url = req.url
     
     # try newspaper3k first
     try:
         article = Article(url)
-        article.config.browser_user_agent = 'Mozilla/5.0'
+        article.config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         article.download()
         article.parse()
         
         if article.text and len(article.text) > 100:
+            logger.info(f"Successfully scraped via newspaper3k: {url}")
             return {"success": True, "text": article.text, "title": article.title, "url": url}
-    except:
-        pass
+    except Exception as e:
+        logger.warning(f"newspaper3k failed for {url}: {e}, trying fallback")
     
     # fallback to beautifulsoup
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
         response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
         soup = BeautifulSoup(response.content, 'html.parser')
         
         # remove junk
-        for tag in soup(['script', 'style', 'nav', 'header', 'footer']):
+        for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'advertisement']):
             tag.decompose()
         
         # get paragraphs
@@ -398,17 +425,24 @@ async def scrape_url(data: dict):
         text = '\n\n'.join([p.get_text().strip() for p in paragraphs if len(p.get_text().strip()) > 50])
         
         if len(text) < 100:
-            raise HTTPException(status_code=400, detail="Could not extract article content")
+            raise HTTPException(status_code=400, detail="Could not extract sufficient article content")
         
         title = soup.find('title')
+        logger.info(f"Successfully scraped via BeautifulSoup: {url}")
         return {
             "success": True,
             "text": text,
-            "title": title.get_text() if title else None,
+            "title": title.get_text().strip() if title else None,
             "url": url
         }
         
+    except HTTPException:
+        raise
+    except requests.RequestException as e:
+        logger.error(f"Request failed for {url}: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to fetch URL: {str(e)}")
     except Exception as e:
+        logger.error(f"Scraping failed for {url}: {e}")
         raise HTTPException(status_code=400, detail=f"Failed to scrape: {str(e)}")
 
 # analyze text for bias and emotion

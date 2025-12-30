@@ -1,12 +1,21 @@
+"use client";
+
 import React from "react";
 import { Check, X } from "lucide-react";
 
-const colorClasses = {
+const colorClasses: Record<string, string> = {
   green: "text-green-300",
   red: "text-red-300",
 };
 
-const ArgumentSection = ({ title, color, icon, points }) => (
+interface ArgumentSectionProps {
+  title: string;
+  color: string;
+  icon: React.ReactNode;
+  points: string[];
+}
+
+const ArgumentSection = ({ title, color, icon, points }: ArgumentSectionProps) => (
   <div className="flex-1 rounded-xl border border-borderLight bg-panel p-4">
     <h4 className={`flex items-center gap-2 ${colorClasses[color]} font-semibold mb-3`}>
       {icon}
@@ -20,7 +29,13 @@ const ArgumentSection = ({ title, color, icon, points }) => (
   </div>
 );
 
-const DebateResults = ({ claim, forPoints = [], againstPoints = [] }) => {
+interface DebateResultsProps {
+  claim: string;
+  forPoints?: string[];
+  againstPoints?: string[];
+}
+
+const DebateResults = ({ claim, forPoints = [], againstPoints = [] }: DebateResultsProps) => {
   const hasFor = Array.isArray(forPoints) && forPoints.length > 0;
   const hasAgainst = Array.isArray(againstPoints) && againstPoints.length > 0;
 
@@ -62,3 +77,4 @@ const DebateResults = ({ claim, forPoints = [], againstPoints = [] }) => {
 };
 
 export default DebateResults;
+

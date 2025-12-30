@@ -1,10 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import BiasCompass from "../components/BiasCompass";
-import EmotionBadge from "../components/EmotionBadge";
-import DebateResults from "../components/DebateResults";
-import { extractDomain, fetchJSON } from "../utils/helpers";
+import BiasCompass from "./BiasCompass";
+import EmotionBadge from "./EmotionBadge";
+import DebateResults from "./DebateResults";
+import { extractDomain, fetchJSON } from "@/lib/helpers";
+import type { AnalyzeResult, DebateResult, Session, SourceBias } from "@/lib/types";
+
+interface MainContentProps {
+  text: string;
+  setText: (text: string) => void;
+  sourceUrl: string;
+  setSourceUrl: (url: string) => void;
+  analysisResult: AnalyzeResult | null;
+  setAnalysisResult: (result: AnalyzeResult | null) => void;
+  debateResult: DebateResult | null;
+  setDebateResult: (result: DebateResult | null) => void;
+  mode: "analyze" | "debate";
+  setMode: (mode: "analyze" | "debate") => void;
+  updateCurrentSession: (updatedFields: Partial<Session>) => void;
+}
 
 const MainContent = ({
   text,
@@ -18,10 +33,10 @@ const MainContent = ({
   mode,
   setMode,
   updateCurrentSession,
-}) => {
+}: MainContentProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [sourceBias, setSourceBias] = useState(null);
+  const [sourceBias, setSourceBias] = useState<SourceBias>(null);
   const [isScraping, setIsScraping] = useState(false);
 
   // if user provides a source url during analyze mode, try to map its domain to known bias
@@ -34,7 +49,7 @@ const MainContent = ({
     const domain = extractDomain(sourceUrl);
     fetch("/data/domain_to_bias.json")
       .then((res) => res.json())
-      .then((map) => {
+      .then((map: Record<string, string>) => {
         if (domain && map[domain]) {
           setSourceBias({ domain, label: map[domain] });
         } else {
@@ -52,7 +67,7 @@ const MainContent = ({
     setError("");
     
     try {
-      const response = await fetch("http://localhost:8000/scrape", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scrape`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: sourceUrl }),
@@ -74,7 +89,7 @@ const MainContent = ({
   };
 
   // Handle sourceUrl change and save to session
-  const handleSourceUrlChange = (newUrl) => {
+  const handleSourceUrlChange = (newUrl: string) => {
     setSourceUrl(newUrl);
     updateCurrentSession({ sourceUrl: newUrl });
   };
@@ -85,7 +100,7 @@ const MainContent = ({
     setError("");
     setAnalysisResult(null);
 
-    const data = await fetchJSON("http://localhost:8000/analyze", { text });
+    const data = await fetchJSON<AnalyzeResult>(`${process.env.NEXT_PUBLIC_API_URL}/analyze`, { text });
 
     if (data.error) {
       setError(data.error);
@@ -108,8 +123,8 @@ const MainContent = ({
     setError("");
     setDebateResult(null);
 
-    const data = await fetchJSON("http://localhost:8000/debate", { text });
-
+    const data = await fetchJSON<DebateResult>(`${process.env.NEXT_PUBLIC_API_URL}/debate`, { text });
+    
     if (data.error) {
       setError(data.error);
     } else {
@@ -247,3 +262,4 @@ const MainContent = ({
 };
 
 export default MainContent;
+
